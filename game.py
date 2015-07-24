@@ -27,10 +27,10 @@ class PlayingCard():
     # unicode, terminal, yo!
     # TODO UNICODE symbols
     shorthand_suits = [
-        u's',
-        u'c',
-        u'\033[31md\033[0m',
-        u'\033[31mh\033[0m',
+        u'\u2660', # spade
+        u'\u2663', # club
+        u'\033[31m\u2666\033[0m', # diamond
+        u'\033[31m\u2665\033[0m', # heart
     ]
 
     suits = [
@@ -130,7 +130,20 @@ class Game():
 
     players = list()
 
-    magic_cards = [2,3,7,10,0]
+    reset_card = 2
+    invisible_card = 3
+    lower_card = 7
+    burn_card = 10
+    reverse_card = 0 # also invisible
+
+    # can always go
+    magic_cards = set([
+            reset_card,
+            invisible_card,
+            lower_card,
+            burn_card,
+            reverse_card,
+    ])
 
     def __init__(self,players):
         self.supply_pile = Deck().shuffle().cards
@@ -146,16 +159,41 @@ class Game():
             player.join_game(self,cards)
 
     def check_move(self,cards):
+        current = self.effective_current_card()
+        # nothing (implies pickup)
         if len(cards) == 0:
             return
 
         # Check for suit coherence
         for card in cards:
-            if cards[0].suit != card.suit
+            if cards[0].suit != card.suit:
                 raise IllegalMove('Cards must be of coherent suit')
 
+        if len(self.payload_pile) == 0:
+            return
 
-        raise IllegalMove('Cannot lay ' + ','.join(cards) +' on '+ self.current_card())
+        # Magic card
+        if card[0] in self.magic_cards:
+            return
+
+        if current.value != self.lower_card:
+            if card[0].value < current.value:
+                raise IllegalMove('Card value too low')
+        elif card[0].value > self.lower_card:
+                raise IllegalMove('Card value too high')
+
+    def effective_current_card(self):
+        '''Ignoring invisible cards...'''
+        if len(self.payload_pile):
+            for card in self.payload_pile:
+                if card not in (self.invisible_card,self.reverse_card):
+                    return card
+
+            # Only invisible cards on table
+            return None
+        else:
+            # No cards on table
+            return None
 
     def play_loop():
         for player in cycle(self.players):
@@ -165,13 +203,8 @@ class Game():
                 player.pickup_payload(self.payload_pile)
                 continue
 
-            self.check_move(cards):
+            self.check_move(cards)
 
-    def current_card(self):
-        if len(self.payload_pile):
-            return self.payload_pile[0]
-        else:
-            return None
 
 players = [
     RandomLegalMovePlayer('Tania'),
