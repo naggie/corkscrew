@@ -104,6 +104,10 @@ class Player():
     def pickup_payload(self,cards):
         self.hand.append(cards)
 
+    def score(self):
+        '''Lower is better, zero wins.'''
+        return len(self.bottom + self.top + self.hand)
+
 
 class RandomLegalMovePlayer(Player):
     def make_move(self):
@@ -204,6 +208,9 @@ class Game():
                 continue
 
             self.check_move(cards)
+
+            if player.score() == 0:
+                break
 
 
 players = [
