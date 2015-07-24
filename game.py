@@ -1,4 +1,5 @@
 from random import shuffle
+from itertools import cycle
 
 class PlayingCard():
     values = [
@@ -79,15 +80,95 @@ class Deck():
         shuffle(self.cards)
         return self
 
-class Game():
-    self.burn_pile = list()
-    self.payload_pile = list()
-    self.supply_pile = list()
 
-    self.players = list()
+class Player():
+    bottom = list()
+    top = list()
+    hand = list()
+
+    def __init__(self,name):
+        self.name = name
+
+    def join_game(self,game,cards):
+        if len(cards) < 9:
+            raise ValueError('New players require 9 cards')
+
+        self.bottom = cards[0:3]
+        self.top = cards[3:6]
+        self.hand = cards[6:9]
+        self.game = game
+
+    def make_move(self):
+        raise NotImplementedError('Define this method')
+
+    def pickup_payload(self,cards):
+        self.hand.append(cards)
+
+
+class RandomLegalMovePlayer(Player):
+    def make_move(self):
+        shuffle(self.hand)
+        return [self.hand[0]]
+        # ...etc
+
+class BestCardsPlayer(Player): pass
+class CalPlayer(Player): pass
+
+class Game():
+    burn_pile = list()
+    payload_pile = list()
+    supply_pile = list()
+
+    players = list()
+
+    magic_cards = [2,3,7,10,0]
 
     def __init__(self,players):
         self.supply_pile = Deck().shuffle().cards
 
-        self.player = players
+        self.players = players
 
+        for player in players:
+            cards = list()
+            for i in range(9):
+                card = self.supply_pile.pop()
+                cards.append(card)
+
+            player.join_game(self,cards)
+
+    def check_move(self,cards):
+        if len(cards) == 0:
+            return
+
+        # Check for suit coherence
+        for card in cards:
+            if cards[0].suit != card.suit
+                raise IllegalMove('Cards must be of coherent suit')
+
+
+        raise IllegalMove('Cannot lay ' + ','.join(cards) +' on '+ self.current_card())
+
+    def play_loop():
+        for player in cycle(self.players):
+            cards = player.make_move()
+
+            if len(cards) == 0:
+                player.pickup_payload(self.payload_pile)
+                continue
+
+            self.check_move(cards):
+
+    def current_card(self):
+        if len(self.payload_pile):
+            return self.payload_pile[0]
+        else:
+            return None
+
+players = [
+    RandomLegalMovePlayer('Tania'),
+    RandomLegalMovePlayer('Cal'),
+    RandomLegalMovePlayer('Rasputin'),
+
+]
+
+Game(players)
