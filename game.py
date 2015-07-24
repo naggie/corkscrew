@@ -108,7 +108,16 @@ class Player():
 class RandomLegalMovePlayer(Player):
     def make_move(self):
         shuffle(self.hand)
-        return [self.hand[0]]
+
+        for i in range(len(self.hand)):
+            try:
+                game.check_move(cards[i])
+                return cards.pop[i]
+            except IllegalMove:
+                continue
+
+        return None
+
         # ...etc
 
 class BestCardsPlayer(Player): pass
