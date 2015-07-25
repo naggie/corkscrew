@@ -3,6 +3,7 @@ from itertools import cycle
 
 # TODO: does game tell player filtered information, or can player enumerate entire game?
 # TODO: consider if invisible cards allow 4-card brn rule (probably not, as invis cards could also manifest 4 in a row)
+# TODO start swap feature
 
 class IllegalMove(Exception): pass
 class IveAlreadyWon(Exception): pass
@@ -71,7 +72,7 @@ class PlayingCard():
         if self.value == 0:
             return self.shorthand_values[0]
 
-        return self.shorthand_suits[self.suit] +' '+ self.shorthand_values[self.value]
+        return self.shorthand_values[self.value] +' '+ self.shorthand_suits[self.suit]
 
 
 class Deck():
@@ -236,7 +237,7 @@ class Game():
         if cards[0] in self.magic_cards:
             return
 
-        if value != self.lower_card:
+        if current.value != self.lower_card:
             if value < current.value:
                 raise IllegalMove('Card value too low')
         elif value > self.lower_card:
@@ -341,7 +342,10 @@ players = [
     RandomLegalMovePlayer('Mitsy'),
 ]
 
-# PrintedGame(players).play_loop()
+PrintedGame(players).play_loop()
+
+from sys import exit
+exit(0)
 
 scores = dict(
     Tania=0,
