@@ -23,7 +23,7 @@ class PlayingCard():
     ]
 
     shorthand_values = [
-        'JOK','A','1','2','3','4','5','6',
+        'JOK','A','2','3','4','5','6',
         '7','8','9','10','J','Q','K','A',
     ]
 
@@ -280,6 +280,7 @@ class PrintedGame(Game):
         print player,'played',
         print ' ' * (20-len(player.name)),
         print ' '.join([card.shorthand() for card in cards])
+        #print ' '.join([str(card) for card in cards])
 
     def on_pickup(self,player,cards):
         print player,'picked up',len(cards),'cards'
