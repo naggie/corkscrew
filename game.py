@@ -92,6 +92,9 @@ class Player():
     def __init__(self,name):
         self.name = name
 
+    def __str__(self):
+        return self.name
+
     def join_game(self,game,cards):
         if len(cards) < 9:
             raise ValueError('New players require 9 cards')
@@ -128,28 +131,28 @@ class Player():
 
     def play_bottom(self,effective_card):
         '''Play a random bottom card, assuming top and hand are exhausted'''
-        return bottom.pop()
+        return [bottom.pop()]
 
 
 
 class RandomLegalMovePlayer(Player):
-    def play_hand(self):
-        _take_random_legal_card(self.hand)
+    def play_hand(self,effective_card):
+        return self._take_random_legal_card(self.hand)
 
-    def play_top(self):
-        _take_random_legal_card(self.top)
+    def play_top(self,effective_card):
+        return self._take_random_legal_card(self.top)
 
     def _take_random_legal_card(self,cards):
         shuffle(cards)
 
         for i in range(len(cards)):
             try:
-                game.check_move(cards[i])
-                return cards.pop[i]
+                self.game.check_move([cards[i]])
+                return [cards.pop(i)]
             except IllegalMove:
                 continue
 
-        return None # pickup
+        return [] # pickup
 
 class BestCardsPlayer(Player): pass
 class CalPlayer(Player): pass
@@ -188,6 +191,7 @@ class Game():
                 cards.append(card)
 
             player.join_game(self,cards)
+            self.on_join(player)
 
     def check_move(self,cards):
         current = self.effective_current_card()
@@ -226,25 +230,49 @@ class Game():
             # No cards on table
             return None
 
-    def play_loop():
+    def play_loop(self):
+        # TODO deal with reverse
         for player in cycle(self.players):
-            cards = player.make_move()
+            effective_card = self.effective_current_card()
+            cards = player.make_move(effective_card)
 
             if len(cards) == 0:
+                self.on_pickup(player,self.payload_pile)
                 player.pickup_payload(self.payload_pile)
                 continue
 
             self.check_move(cards)
+            self.on_move(player,cards)
 
             if player.score() == 0:
-                break
+                # TODO remove player, on_win
+                 break
+
+
+
+    def on_win(self): pass
+    def on_lose(self): pass
+    def on_join(self,player): pass
+    def on_move(self,player,cards): pass
+    def on_pickup(self,player,cards): pass
+
+class PrintedGame(Game):
+    def on_join(self,player):
+        print player.__class__.__name__,player,'joined'
+
+    def on_move(self,player,cards):
+        print player,'played',
+        print ' '.join([card.shorthand() for card in cards])
+
+
+    def on_pickup(self,player,cards):
+        print player,'picked up'
 
 
 players = [
     RandomLegalMovePlayer('Tania'),
     RandomLegalMovePlayer('Cal'),
     RandomLegalMovePlayer('Rasputin'),
-
 ]
 
-Game(players)
+PrintedGame(players).play_loop()
