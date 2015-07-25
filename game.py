@@ -109,7 +109,9 @@ class Player():
         return len(self.bottom + self.top + self.hand)
 
     def pickup_payload(self,cards):
-        self.hand.append(cards)
+        while len(cards):
+            card = cards.pop()
+            self.hand.append(card)
 
     def make_move(self,effective_card):
         if len(self.hand):
@@ -158,7 +160,7 @@ class BestCardsPlayer(Player): pass
 class CalPlayer(Player): pass
 
 class Game():
-    burn_pile = list()
+    discard_pile = list()
     payload_pile = list()
     supply_pile = list()
 
@@ -195,6 +197,7 @@ class Game():
 
     def check_move(self,cards):
         current = self.effective_current_card()
+
         # nothing (implies pickup)
         if len(cards) == 0:
             return
@@ -208,13 +211,13 @@ class Game():
             return
 
         # Magic card
-        if card[0] in self.magic_cards:
+        if cards[0] in self.magic_cards:
             return
 
         if current.value != self.lower_card:
-            if card[0].value < current.value:
+            if cards[0].value < current.value:
                 raise IllegalMove('Card value too low')
-        elif card[0].value > self.lower_card:
+        elif cards[0].value > self.lower_card:
                 raise IllegalMove('Card value too high')
 
     def effective_current_card(self):
@@ -241,8 +244,21 @@ class Game():
                 player.pickup_payload(self.payload_pile)
                 continue
 
-            self.check_move(cards)
+            try:
+                self.check_move(cards)
+            except IllegalMove:
+                self.on_pickup(player,self.payload_pile)
+                player.pickup_payload(self.payload_pile)
+
             self.on_move(player,cards)
+
+            for card in cards:
+                self.payload_pile.insert(0,card)
+
+            if cards[0].value == self.burn_card:
+                while len(self.payload_pile):
+                    card = self.payload_pile.pop()
+                    self.discard_pile.append(card)
 
             if player.score() == 0:
                 # TODO remove player, on_win
@@ -265,9 +281,8 @@ class PrintedGame(Game):
         print ' ' * (20-len(player.name)),
         print ' '.join([card.shorthand() for card in cards])
 
-
     def on_pickup(self,player,cards):
-        print player,'picked up'
+        print player,'picked up',len(cards),'cards'
 
 
 players = [
