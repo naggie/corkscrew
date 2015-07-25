@@ -1,6 +1,7 @@
 from random import shuffle
 from itertools import cycle
 
+# TODO: does game tell player filtered information, or can player enumerate entire game?
 
 class IllegalMove(Exception): pass
 class IveAlreadyWon(Exception): pass
@@ -25,7 +26,7 @@ class PlayingCard():
 
     shorthand_values = [
         'JOK','A','2','3','4','5','6',
-        '7','8','9','10','J','Q','K','A',
+        '7','8','9','10','J','Q','K',
     ]
 
     # unicode, terminal, yo!
@@ -173,6 +174,9 @@ class Game():
     burn_card = 10
     reverse_card = 0 # also invisible
 
+    # TODO: could be both option: None
+    ace_high = True
+
     # can always go
     magic_cards = set([
             reset_card,
@@ -206,10 +210,15 @@ class Game():
         if len(cards) == 0:
             return
 
+        value = cards[0].value
+
         # Check for suit coherence
         for card in cards:
             if cards[0].suit != card.suit:
                 raise IllegalMove('Cards must be of coherent suit')
+
+        if self.ace_high:
+            value = 14
 
         if len(self.payload_pile) == 0:
             return
@@ -218,10 +227,10 @@ class Game():
         if cards[0] in self.magic_cards:
             return
 
-        if current.value != self.lower_card:
-            if cards[0].value < current.value:
+        if value != self.lower_card:
+            if value < current.value:
                 raise IllegalMove('Card value too low')
-        elif cards[0].value > self.lower_card:
+        elif value > self.lower_card:
                 raise IllegalMove('Card value too high')
 
     def effective_current_card(self):
