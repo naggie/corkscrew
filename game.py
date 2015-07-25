@@ -235,10 +235,10 @@ class Game():
 
         value = cards[0].value
 
-        # Check for suit coherence
+        # Check for value coherence
         for card in cards:
-            if cards[0].suit != card.suit:
-                raise IllegalMove('Cards must be of coherent suit')
+            if cards[0].value != card.value:
+                raise IllegalMove('Cards must be of coherent value')
 
         if self.ace_high and value == 1:
             value = 14
