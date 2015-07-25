@@ -262,11 +262,13 @@ class Game():
 
             if player.score() == 0:
                 # TODO remove player, on_win
-                 break
+                # TODO continue the game until one player is left (loser)
+                self.on_win(player)
+                break
 
 
 
-    def on_win(self): pass
+    def on_win(self,player): pass
     def on_lose(self): pass
     def on_join(self,player): pass
     def on_move(self,player,cards): pass
@@ -285,6 +287,8 @@ class PrintedGame(Game):
     def on_pickup(self,player,cards):
         print player,'picked up',len(cards),'cards'
 
+    def on_win(self,player):
+        print player,'won'
 
 players = [
     RandomLegalMovePlayer('Tania'),
