@@ -1,6 +1,7 @@
 from random import shuffle
 from itertools import cycle
 
+
 class IllegalMove(Exception): pass
 class IveAlreadyWon(Exception): pass
 
@@ -296,4 +297,8 @@ players = [
     RandomLegalMovePlayer('Rasputin'),
 ]
 
-PrintedGame(players).play_loop()
+# PrintedGame(players).play_loop()
+
+for x in range(100):
+    print x
+    Game(players).play_loop()
