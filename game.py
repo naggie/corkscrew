@@ -4,6 +4,7 @@ from itertools import cycle
 # TODO: does game tell player filtered information, or can player enumerate entire game?
 # TODO: consider if invisible cards allow 4-card brn rule (probably not, as invis cards could also manifest 4 in a row)
 # TODO start swap feature
+# TODO: ability to lay multiple cards for RandomLegalMovePlayer
 
 class IllegalMove(Exception): pass
 class IveAlreadyWon(Exception): pass
@@ -283,14 +284,17 @@ class Game():
                 self.payload_pile.insert(0,card)
 
             if cards[0].value == self.burn_card:
+                self.on_burn(player,self.payload_pile)
                 self.burn()
 
+            # TODO re-implement when not 1AM
             if len(self.payload_pile) >= 4:
                 same = 0
                 for value in self.payload_pile[:4]:
                     if value == self.payload_pile[0].value:
                         same+=1
                 if same == 4:
+                    self.on_burn(player,self.payload_pile)
                     self.burn()
 
 
@@ -330,7 +334,8 @@ class PrintedGame(Game):
         print player,'picked up',len(cards),'cards'
 
     def on_burn(self,player,cards):
-        print player,'burned',len(cards),'cards'
+        #print player,'burned',len(cards),'cards'
+        print ' ...which burns',len(cards),'cards'
 
     def on_win(self,player):
         print player,'won'
