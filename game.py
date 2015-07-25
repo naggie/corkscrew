@@ -217,7 +217,7 @@ class Game():
             if cards[0].suit != card.suit:
                 raise IllegalMove('Cards must be of coherent suit')
 
-        if self.ace_high:
+        if self.ace_high and value == 1:
             value = 14
 
         if len(self.payload_pile) == 0:
