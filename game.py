@@ -2,9 +2,11 @@ from random import shuffle
 from itertools import cycle
 
 # TODO: does game tell player filtered information, or can player enumerate entire game?
+# TODO: consider if invisible cards allow 4-card brn rule (probably not, as invis cards could also manifest 4 in a row)
 
 class IllegalMove(Exception): pass
 class IveAlreadyWon(Exception): pass
+class Deadlock(Exception): pass
 
 class PlayingCard():
     values = [
@@ -189,6 +191,11 @@ class Game():
     winner = None
     loser = None
 
+    moves = 0
+
+    # deadlock detection
+    max_moves_per_player = 10000
+
     def __init__(self,players):
         self.supply_pile = Deck().shuffle().cards
 
@@ -202,6 +209,8 @@ class Game():
 
             player.join_game(self,cards)
             self.on_join(player)
+
+        self.max_moves = self.max_moves_per_player * len(players)
 
     def check_move(self,cards):
         current = self.effective_current_card()
@@ -264,14 +273,25 @@ class Game():
                 player.pickup_payload(self.payload_pile)
 
             self.on_move(player,cards)
+            self.moves +=1
+
+            if self.moves > self.max_moves:
+                raise Deadlock('%s players',len(self.players))
 
             for card in cards:
                 self.payload_pile.insert(0,card)
 
             if cards[0].value == self.burn_card:
-                while len(self.payload_pile):
-                    card = self.payload_pile.pop()
-                    self.discard_pile.append(card)
+                self.burn()
+
+            if len(self.payload_pile) >= 4:
+                same = 0
+                for value in self.payload_pile[:4]:
+                    if value == self.payload_pile[0].value:
+                        same+=1
+                if same == 4:
+                    self.burn()
+
 
             if player.score() == 0:
                 # TODO remove player, on_win
@@ -282,12 +302,18 @@ class Game():
 
         return self
 
+    def burn(self):
+        while len(self.payload_pile):
+            card = self.payload_pile.pop()
+            self.discard_pile.append(card)
+
 
     def on_win(self,player): pass
     def on_lose(self): pass
     def on_join(self,player): pass
     def on_move(self,player,cards): pass
     def on_pickup(self,player,cards): pass
+    def on_burn(self,player,cards): pass
 
 class PrintedGame(Game):
     def on_join(self,player):
@@ -302,6 +328,9 @@ class PrintedGame(Game):
     def on_pickup(self,player,cards):
         print player,'picked up',len(cards),'cards'
 
+    def on_burn(self,player,cards):
+        print player,'burned',len(cards),'cards'
+
     def on_win(self,player):
         print player,'won'
 
@@ -309,6 +338,7 @@ players = [
     RandomLegalMovePlayer('Tania'),
     RandomLegalMovePlayer('Cal'),
     RandomLegalMovePlayer('Rasputin'),
+    RandomLegalMovePlayer('Mitsy'),
 ]
 
 # PrintedGame(players).play_loop()
@@ -317,11 +347,30 @@ scores = dict(
     Tania=0,
     Cal=0,
     Rasputin=0,
+    Mitsy=0,
 )
 
-for x in range(1000):
-    print x
-    game = Game(players).play_loop()
+total_moves = 0
+min_moves = 9999
+max_moves = 0
+deadlocks = 0
+
+for x in range(3000):
+
+    try:
+        game = Game(players).play_loop()
+    except Deadlock:
+        deadlocks +=1
+
+    print x, game.moves, 'moves'
     scores[game.winner.name] +=1
 
+    total_moves += game.moves
+    min_moves = min(min_moves,game.moves)
+    max_moves = max(max_moves,game.moves)
+
 print scores
+print total_moves,'total moves'
+print min_moves,'min moves'
+print max_moves,'max moves'
+print deadlocks,'deadlocks'
