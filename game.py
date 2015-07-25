@@ -131,7 +131,7 @@ class Player():
 
     def play_bottom(self,effective_card):
         '''Play a random bottom card, assuming top and hand are exhausted'''
-        return [bottom.pop()]
+        return [self.bottom.pop()]
 
 
 
@@ -262,6 +262,7 @@ class PrintedGame(Game):
 
     def on_move(self,player,cards):
         print player,'played',
+        print ' ' * (20-len(player.name)),
         print ' '.join([card.shorthand() for card in cards])
 
 
