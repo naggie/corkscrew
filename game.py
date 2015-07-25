@@ -5,6 +5,9 @@ from itertools import cycle
 # TODO: consider if invisible cards allow 4-card brn rule (probably not, as invis cards could also manifest 4 in a row)
 # TODO start swap feature
 # TODO: ability to lay multiple cards for RandomLegalMovePlayer
+# TODO TODO burn gives another go
+# TODO TODO joker reverse direction!
+# TODO bug where someone can't beat a 4 (or non legal move)
 
 class IllegalMove(Exception): pass
 class IveAlreadyWon(Exception): pass
