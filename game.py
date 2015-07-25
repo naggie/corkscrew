@@ -182,6 +182,9 @@ class Game():
             reverse_card,
     ])
 
+    winner = None
+    loser = None
+
     def __init__(self,players):
         self.supply_pile = Deck().shuffle().cards
 
@@ -265,8 +268,10 @@ class Game():
                 # TODO remove player, on_win
                 # TODO continue the game until one player is left (loser)
                 self.on_win(player)
+                self.winner = player
                 break
 
+        return self
 
 
     def on_win(self,player): pass
@@ -299,6 +304,15 @@ players = [
 
 # PrintedGame(players).play_loop()
 
-for x in range(100):
+scores = dict(
+    Tania=0,
+    Cal=0,
+    Rasputin=0,
+)
+
+for x in range(1000):
     print x
-    Game(players).play_loop()
+    game = Game(players).play_loop()
+    scores[game.winner.name] +=1
+
+print scores
