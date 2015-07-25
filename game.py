@@ -1,6 +1,9 @@
 from random import shuffle
 from itertools import cycle
 
+class IllegalMove(Exception): pass
+class IveAlreadyWon(Exception): pass
+
 class PlayingCard():
     values = [
         'Joker',
@@ -98,31 +101,55 @@ class Player():
         self.hand = cards[6:9]
         self.game = game
 
-    def make_move(self):
-        raise NotImplementedError('Define this method')
-
-    def pickup_payload(self,cards):
-        self.hand.append(cards)
-
     def score(self):
         '''Lower is better, zero wins.'''
         return len(self.bottom + self.top + self.hand)
 
+    def pickup_payload(self,cards):
+        self.hand.append(cards)
+
+    def make_move(self,effective_card):
+        if len(self.hand):
+            return self.play_hand(effective_card)
+        if len(self.top):
+            return self.play_top(effective_card)
+        if len(self.bottom):
+            return self.play_bottom(effective_card)
+        else:
+            raise IveAlreadyWon()
+
+
+    def play_hand(self,effective_card):
+        raise NotImplementedError('Define this method')
+
+    def play_top(self,effective_card):
+        '''The top set of cards -- bear in bind everyone can see them. Assumes hand is exhausted'''
+        raise NotImplementedError('Define this method')
+
+    def play_bottom(self,effective_card):
+        '''Play a random bottom card, assuming top and hand are exhausted'''
+        return bottom.pop()
+
+
 
 class RandomLegalMovePlayer(Player):
-    def make_move(self):
-        shuffle(self.hand)
+    def play_hand(self):
+        _take_random_legal_card(self.hand)
 
-        for i in range(len(self.hand)):
+    def play_top(self):
+        _take_random_legal_card(self.top)
+
+    def _take_random_legal_card(self,cards):
+        shuffle(cards)
+
+        for i in range(len(cards)):
             try:
                 game.check_move(cards[i])
                 return cards.pop[i]
             except IllegalMove:
                 continue
 
-        return None
-
-        # ...etc
+        return None # pickup
 
 class BestCardsPlayer(Player): pass
 class CalPlayer(Player): pass
