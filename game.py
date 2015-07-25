@@ -224,6 +224,15 @@ class Game():
         if len(cards) == 0:
             return
 
+        # Python is pass-by-object. I don't want to mutate the value
+        # TODO: should A-high be a different card (value 1 becomes 14 in card constructor)
+        # TODO: also a 7-lower, 7-higher
+        # TODO: better name for var
+        if current:
+            current_value = current.value
+        else:
+            current_value = 0
+
         value = cards[0].value
 
         # Check for suit coherence
@@ -234,6 +243,9 @@ class Game():
         if self.ace_high and value == 1:
             value = 14
 
+        if self.ace_high and current_value == 1:
+            current_value = 14
+
         if len(self.payload_pile) == 0:
             return
 
@@ -241,8 +253,8 @@ class Game():
         if cards[0] in self.magic_cards:
             return
 
-        if current.value != self.lower_card:
-            if value < current.value:
+        if current_value != self.lower_card:
+            if value < current_value:
                 raise IllegalMove('Card value too low')
         elif value > self.lower_card:
                 raise IllegalMove('Card value too high')
